@@ -25,6 +25,7 @@ public class MailService {
     private final MailRepository mailRepository;
     private final MailRecipientRepository mailRecipientRepository;
     private final UserRepository userRepository;
+    private final AuditService auditService;
 
     @Transactional
     public MailResponse sendMail(MailRequest request, String senderEmail) {
@@ -57,6 +58,7 @@ public class MailService {
         }
 
         savedMail.setRecipients(recipients);
+        auditService.log(senderEmail, "MAIL_SENT", "MAIL", savedMail.getId(), "Mail sent: " + request.getSubject());
         return toResponse(savedMail, false);
     }
 

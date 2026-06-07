@@ -24,6 +24,8 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
     private final AuthenticationManager authenticationManager;
+    private final AuditService auditService;
+    
 
     public AuthResponse register(RegisterRequest request) {
 
@@ -56,6 +58,7 @@ public class AuthService {
         String token = jwtTokenProvider.generateToken(
             savedUser.getEmail(), savedUser.getRole().name());
 
+        auditService.log(savedUser.getEmail(), "USER_REGISTERED", "USER", savedUser.getId(), "New user registered: " + savedUser.getEmail());
         return AuthResponse.builder()
                 .token(token)
                 .email(savedUser.getEmail())
@@ -81,6 +84,7 @@ public class AuthService {
         String token = jwtTokenProvider.generateToken(
             user.getEmail(), user.getRole().name());
 
+        auditService.log(user.getEmail(), "USER_LOGIN", "USER", user.getId(), "User logged in: " + user.getEmail());
         return AuthResponse.builder()
                 .token(token)
                 .email(user.getEmail())

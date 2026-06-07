@@ -20,6 +20,7 @@ public class DeviceService {
 
     private final DeviceRepository deviceRepository;
     private final UserRepository userRepository;
+    private final AuditService auditService;
 
     public DeviceResponse registerDevice(
             DeviceRequest request, String userEmail) {
@@ -43,7 +44,9 @@ public class DeviceService {
                 .status(DeviceStatus.PENDING)
                 .build();
 
-        return toResponse(deviceRepository.save(device));
+        Device saved = deviceRepository.save(device);
+        auditService.log(userEmail, "DEVICE_REGISTERED", "DEVICE", saved.getId(), "Device registered: " + request.getDeviceName());
+        return toResponse(saved);
     }
 
     public List<DeviceResponse> getMyDevices(String userEmail) {
@@ -83,7 +86,9 @@ public class DeviceService {
         device.setApprovedBy(admin);
         device.setApprovedAt(LocalDateTime.now());
 
-        return toResponse(deviceRepository.save(device));
+        Device saved = deviceRepository.save(device);
+        auditService.log(adminEmail, "DEVICE_APPROVED", "DEVICE", saved.getId(), "Device approved: " + device.getDeviceName());
+        return toResponse(saved);
     }
 
     public DeviceResponse rejectDevice(Long deviceId, String adminEmail) {
