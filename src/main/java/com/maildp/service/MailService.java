@@ -26,6 +26,7 @@ public class MailService {
     private final MailRecipientRepository mailRecipientRepository;
     private final UserRepository userRepository;
     private final AuditService auditService;
+    private final EmailNotificationService emailNotificationService;
 
     @Transactional
     public MailResponse sendMail(MailRequest request, String senderEmail) {
@@ -59,6 +60,13 @@ public class MailService {
 
         savedMail.setRecipients(recipients);
         auditService.log(senderEmail, "MAIL_SENT", "MAIL", savedMail.getId(), "Mail sent: " + request.getSubject());
+        for (MailRecipient mr : recipients) {
+            emailNotificationService.sendMailNotification(
+                mr.getRecipient().getEmail(),
+                sender.getFullName(),
+                request.getSubject()
+            );
+        }
         return toResponse(savedMail, false);
     }
 

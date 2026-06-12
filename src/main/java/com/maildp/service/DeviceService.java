@@ -21,6 +21,7 @@ public class DeviceService {
     private final DeviceRepository deviceRepository;
     private final UserRepository userRepository;
     private final AuditService auditService;
+    private final EmailNotificationService emailNotificationService;
 
     public DeviceResponse registerDevice(
             DeviceRequest request, String userEmail) {
@@ -88,6 +89,11 @@ public class DeviceService {
 
         Device saved = deviceRepository.save(device);
         auditService.log(adminEmail, "DEVICE_APPROVED", "DEVICE", saved.getId(), "Device approved: " + device.getDeviceName());
+        emailNotificationService.sendDeviceStatusNotification(
+        	    device.getUser().getEmail(),
+        	    device.getDeviceName(),
+        	    "APPROVED"
+        	);
         return toResponse(saved);
     }
 
